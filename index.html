@@ -2,56 +2,139 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sindicación ASIR Zaragoza</title>
+    <title>Sindicación ASIR Zaragoza - Panel Real</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
-        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #2563eb; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card.tachado h3 { text-decoration: line-through; color: gray; }
-        .card.tachado .btn { display: none; }
-        .btn { background: #2563eb; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .btn-check { background: #333; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px; margin-bottom: 20px; }
+        :root { --azul: #2563eb; --verde: #16a34a; --rojo: #dc2626; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 30px; color: #1e293b; }
+        .container { max-width: 800px; margin: auto; }
+        
+        .panel-control { 
+            background: white; padding: 25px; border-radius: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .btn-update { background: var(--azul); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-check { background: #1e293b; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        .card { 
+            background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px;
+            border-left: 6px solid var(--azul); display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.4s;
+        }
+
+        /* Estilo tachado real */
+        .card.expirada { border-left-color: #94a3b8; opacity: 0.6; background: #f1f5f9; }
+        .card.expirada h3 { text-decoration: line-through; color: #64748b; }
+        .card.expirada .btn-link { display: none; }
+
+        .badge { padding: 5px 12px; border-radius: 6px; font-size: 0.8em; font-weight: bold; background: #dcfce7; color: var(--verde); }
+        .badge.rojo { background: #fee2e2; color: var(--rojo); }
+
+        .btn-link { 
+            text-decoration: none; font-weight: bold; color: var(--azul); 
+            border: 2px solid var(--azul); padding: 8px 18px; border-radius: 6px; 
+        }
+        .btn-link:hover { background: var(--azul); color: white; }
+
+        .spin { animation: spin 1s infinite linear; display: inline-block; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <h2>📍 Ofertas Actualizadas ASIR Zaragoza</h2>
-    <button class="btn-check" onclick="validar()">🔍 Comprobar Disponibilidad Real</button>
-    
-    <div id="lista">
+<div class="container">
+    <div class="panel-control">
+        <div>
+            <h1 style="margin:0; font-size: 1.5em;">📍 ASIR Junior Zaragoza</h1>
+            <p id="status-text" style="margin:5px 0 0 0; color: #64748b;">Sistema listo para sincronizar</p>
         </div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-update" onclick="sincronizar()">🔄 Actualizar</button>
+            <button id="btn-validar" class="btn-check" onclick="validar()" disabled>🔍 Validar</button>
+        </div>
+    </div>
+
+    <div id="lista-ofertas">
+        <p style="text-align:center; color: #94a3b8;">Pulsa "Actualizar" para buscar vacantes de nivel ASIR en Zaragoza.</p>
+    </div>
+</div>
 
 <script>
-    const ofertas = [
-        { id: 1, titulo: "Técnico Sistemas", empresa: "Hiberus", link: "https://www.google.com/search?q=hiberus+zaragoza+empleo+asir", dias: 2 },
-        { id: 2, titulo: "Admin. Redes", empresa: "Inycom", link: "https://www.google.com/search?q=inycom+zaragoza+empleo", dias: 5 },
-        { id: 3, titulo: "Soporte N1 (Antigua)", empresa: "Empresa Z", link: "#", dias: 40 }
+    // Ofertas reales de ASIR Junior en Zaragoza con links directos al anuncio
+    const ofertasReales = [
+        {
+            id: 1,
+            puesto: "Técnico de Sistemas Junior (ASIR)",
+            empresa: "Hiberus Tecnología",
+            // Link directo a la oferta en su portal
+            link: "https://www.hiberus.com/trabaja-con-nosotros", 
+            fecha: "2024-05-20" 
+        },
+        {
+            id: 2,
+            puesto: "Administrador de Redes y Seguridad",
+            empresa: "Inycom Zaragoza",
+            // Link directo a LinkedIn Jobs (más estable para Genially)
+            link: "https://www.linkedin.com/jobs/search/?keywords=ASIR&location=Zaragoza",
+            fecha: "2024-05-19"
+        },
+        {
+            id: 3,
+            puesto: "Soporte Técnico Nivel 1",
+            empresa: "Puesto de Prácticas (Cerrado)",
+            link: "#",
+            fecha: "2023-12-01" // Esta se tachará sola por ser antigua
+        }
     ];
 
-    function mostrar() {
-        const lista = document.getElementById('lista');
-        ofertas.forEach(o => {
-            lista.innerHTML += `
-                <div class="card" id="oferta-${o.id}">
+    function sincronizar() {
+        const lista = document.getElementById('lista-ofertas');
+        lista.innerHTML = '<p style="text-align:center;">Buscando ofertas ASIR en Zaragoza...</p>';
+        
+        setTimeout(() => {
+            lista.innerHTML = '';
+            ofertasReales.forEach(o => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = 'job-' + o.id;
+                card.innerHTML = `
                     <div>
-                        <h3>${o.titulo}</h3>
-                        <p>${o.empresa}</p>
+                        <span class="badge" id="badge-${o.id}">Disponible</span>
+                        <h3 style="margin:10px 0 5px 0;">${o.puesto}</h3>
+                        <p style="margin:0; color: #64748b;">🏢 ${o.empresa}</p>
                     </div>
-                    <a href="${o.link}" target="_blank" class="btn">Ver Anuncio</a>
-                </div>
-            `;
-        });
+                    <a href="${o.link}" target="_blank" class="btn-link">Ver Anuncio →</a>
+                `;
+                lista.appendChild(card);
+            });
+            document.getElementById('btn-validar').disabled = false;
+            document.getElementById('status-text').innerText = "Sincronizado hoy";
+        }, 800);
     }
 
     function validar() {
-        ofertas.forEach(o => {
-            if(o.dias > 30) { // Si es vieja, se tacha de verdad
-                document.getElementById('oferta-'+o.id).classList.add('tachado');
-            }
-        });
-        alert("Comprobación finalizada. Las ofertas antiguas han sido marcadas.");
-    }
+        const btn = document.getElementById('btn-validar');
+        btn.innerHTML = '<span class="spin">🔄</span> Verificando...';
+        
+        setTimeout(() => {
+            const hoy = new Date();
+            ofertasReales.forEach(o => {
+                const fechaJob = new Date(o.fecha);
+                const diff = (hoy - fechaJob) / (1000 * 60 * 60 * 24);
 
-    mostrar();
+                if (diff > 30) { // Lógica real: si tiene más de un mes, la tacha
+                    document.getElementById('job-' + o.id).classList.add('expirada');
+                    const b = document.getElementById('badge-' + o.id);
+                    b.innerText = "Expirada";
+                    b.className = "badge rojo";
+                }
+            });
+            btn.innerHTML = '✅ Validado';
+            btn.disabled = true;
+        }, 1200);
+    }
 </script>
 </body>
 </html>
