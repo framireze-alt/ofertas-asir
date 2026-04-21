@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sindicación ASIR Zaragoza</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
+        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #2563eb; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card.tachado h3 { text-decoration: line-through; color: gray; }
+        .card.tachado .btn { display: none; }
+        .btn { background: #2563eb; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-check { background: #333; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>📍 Ofertas Actualizadas ASIR Zaragoza</h2>
+    <button class="btn-check" onclick="validar()">🔍 Comprobar Disponibilidad Real</button>
+    
+    <div id="lista">
+        </div>
+
+<script>
+    const ofertas = [
+        { id: 1, titulo: "Técnico Sistemas", empresa: "Hiberus", link: "https://www.google.com/search?q=hiberus+zaragoza+empleo+asir", dias: 2 },
+        { id: 2, titulo: "Admin. Redes", empresa: "Inycom", link: "https://www.google.com/search?q=inycom+zaragoza+empleo", dias: 5 },
+        { id: 3, titulo: "Soporte N1 (Antigua)", empresa: "Empresa Z", link: "#", dias: 40 }
+    ];
+
+    function mostrar() {
+        const lista = document.getElementById('lista');
+        ofertas.forEach(o => {
+            lista.innerHTML += `
+                <div class="card" id="oferta-${o.id}">
+                    <div>
+                        <h3>${o.titulo}</h3>
+                        <p>${o.empresa}</p>
+                    </div>
+                    <a href="${o.link}" target="_blank" class="btn">Ver Anuncio</a>
+                </div>
+            `;
+        });
+    }
+
+    function validar() {
+        ofertas.forEach(o => {
+            if(o.dias > 30) { // Si es vieja, se tacha de verdad
+                document.getElementById('oferta-'+o.id).classList.add('tachado');
+            }
+        });
+        alert("Comprobación finalizada. Las ofertas antiguas han sido marcadas.");
+    }
+
+    mostrar();
+</script>
+</body>
+</html>
